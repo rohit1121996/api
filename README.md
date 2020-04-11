@@ -16,7 +16,10 @@ A volunteer-driven database for COVID-19 stats & patient tracing in India
 |                                                       | https://api.covid19india.org/states_daily_csv/deceased.csv |
 |                                                       | https://api.covid19india.org/states_daily_csv/recovered.csv   |
 
-  
+ 
+ World data: url:'https://corona.lmao.ninja/countries?sort=country'
+ 
+ 
 ## Projects Using This API
 
 - [INDIA COVID-19 TRACKER](https://www.covid19india.org/) (Visualization)
