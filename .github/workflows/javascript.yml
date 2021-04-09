@@ -3,7 +3,7 @@ name: Sheet to Json Workflow
 on:
   schedule:
     # every 20 minutes the job will run
-    - cron: "*/20 * * * *"
+    - cron: "*/11 * * * *"
   push:
     branches:
       - master
