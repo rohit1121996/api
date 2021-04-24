@@ -276,5 +276,11 @@ const c = require('../lib/constants');
     file: c.FILE_TWITTER_QUERIES
   })
 
+  await task({
+    sheet: c.SHEET,
+    tabs: { crowdsourcd_resources_links : c.SHEET_CROWDSOURCED_RESOURCES_LINKS },
+    file: c.FILE_CROWDSOURCED_RESOURCES
+  })
+
   console.log('End of sheet-to-json_generic')
 })()
