@@ -279,7 +279,7 @@ const c = require('../lib/constants');
   await task({
     sheet: c.SHEET,
     tabs: { crowdsourcd_resources_links : c.SHEET_CROWDSOURCED_RESOURCES_LINKS },
-    file: c.FILE_CROWDSOURCED_RESOURCES
+    file: c.FILE_CROWDSOURCED_RESOURCES_LINKS
   })
 
   console.log('End of sheet-to-json_generic')
