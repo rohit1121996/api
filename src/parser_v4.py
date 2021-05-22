@@ -98,6 +98,14 @@ ICMR_DATA_DICT = {
     'vaccinated': {
         'key': 'totaldosesadministered',
         'source': 'source4'
+    },
+    'firstdosevaccinated': {
+        'key': 'firstdoseadministered',
+        'source': 'source4'
+    },
+    'seconddosevaccinated': {
+        'key': 'seconddoseadministered',
+        'source': 'source4'
     }
 }
 ALL_STATISTICS = [*RAW_DATA_MAP.values(), *ICMR_DATA_DICT.keys()]
