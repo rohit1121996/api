@@ -644,7 +644,11 @@ def parse_district_vaccination(reader):
           continue
 
         if count:
-          data[date][state]["districts"][district]["total"][statistic] = count
+          inc(
+              data[date][state]["districts"][district]["total"],
+              statistic,
+              count,
+          )
 
 
 def contains(raw_data, keys):
