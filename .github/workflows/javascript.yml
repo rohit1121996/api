@@ -82,6 +82,7 @@ jobs:
           STUCK_BOT: ${{ secrets.STUCK_BOT }}
           GITHUB_TOKEN: ${{ secrets.github_token }}
       - name: Repository Dispatch
+        if: always()
         uses: actions/github-script@v2
         with:
           github-token: ${{secrets.JUN_TOKEN2}}
