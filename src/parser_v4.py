@@ -110,9 +110,17 @@ VACCINATION_DATA_DICT = {
 }
 ALL_STATISTICS = [*RAW_DATA_MAP.values(), *ICMR_DATA_DICT.keys()]
 # CSV Headers
-STATISTIC_HEADERS = ["Confirmed", "Recovered", "Deceased", "Other", "Tested"]
-STATE_CSV_HEADER = ["Date", "State", *STATISTIC_HEADERS]
-DISTRICT_CSV_HEADER = ["Date", "State", "District", *STATISTIC_HEADERS]
+CSV_STATISTIC_HEADERS = {
+    "confirmed": "Confirmed",
+    "recovered": "Recovered",
+    "deceased": "Deceased",
+    "other": "Other",
+    "tested": "Tested",
+}
+STATE_CSV_HEADER = ["Date", "State", *CSV_STATISTIC_HEADERS.values()]
+DISTRICT_CSV_HEADER = [
+    "Date", "State", "District", *CSV_STATISTIC_HEADERS.values()
+]
 # Skip warning for these states
 VACCINATION_SKIP_STATES = {"total", "miscellaneous"}
 
@@ -1078,16 +1086,17 @@ def write_csvs(writer_states, writer_districts):
     for state in sorted(curr_data):
       state_data = curr_data[state]
       # Date, State, Confirmed, Recovered, Deceased, Other, Tested
-      row = [
-          date,
-          STATE_NAMES[state],
-          state_data["total"]["confirmed"] or 0,
-          state_data["total"]["recovered"] or 0,
-          state_data["total"]["deceased"] or 0,
-          state_data["total"]["other"] or 0,
-          state_data["total"]["tested"] or "",
-      ]
-      writer_states.writerow(row)
+      if set(state_data["total"]) & set(CSV_STATISTIC_HEADERS):
+        row = [
+            date,
+            STATE_NAMES[state],
+            state_data["total"]["confirmed"] or 0,
+            state_data["total"]["recovered"] or 0,
+            state_data["total"]["deceased"] or 0,
+            state_data["total"]["other"] or 0,
+            state_data["total"]["tested"] or "",
+        ]
+        writer_states.writerow(row)
 
       if "districts" not in state_data or date < GOSPEL_DATE:
         # Total state has no district data
@@ -1096,18 +1105,19 @@ def write_csvs(writer_states, writer_districts):
 
       for district in sorted(state_data["districts"]):
         district_data = state_data["districts"][district]
-        # Date, State, District, Confirmed, Recovered, Deceased, Other, Tested
-        row = [
-            date,
-            STATE_NAMES[state],
-            district,
-            district_data["total"]["confirmed"] or 0,
-            district_data["total"]["recovered"] or 0,
-            district_data["total"]["deceased"] or 0,
-            district_data["total"]["other"] or 0,
-            district_data["total"]["tested"] or "",
-        ]
-        writer_districts.writerow(row)
+        if set(district_data["total"]) & set(CSV_STATISTIC_HEADERS):
+          # Date, State, District, Confirmed, Recovered, Deceased, Other, Tested
+          row = [
+              date,
+              STATE_NAMES[state],
+              district,
+              district_data["total"]["confirmed"] or 0,
+              district_data["total"]["recovered"] or 0,
+              district_data["total"]["deceased"] or 0,
+              district_data["total"]["other"] or 0,
+              district_data["total"]["tested"] or "",
+          ]
+          writer_districts.writerow(row)
 
 
 if __name__ == "__main__":
