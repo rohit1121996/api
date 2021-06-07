@@ -84,7 +84,7 @@ jobs:
       - name: Repository Dispatch
         uses: actions/github-script@v2
         with:
-          github-token: ${{secrets.JUN_TOKEN}}
+          github-token: ${{secrets.JUN_TOKEN2}}
           script: |
             const fs = require('fs');
             await github.repos.createDispatchEvent({
