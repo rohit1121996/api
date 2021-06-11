@@ -19,6 +19,9 @@ INDIA_DATE = datetime.strftime(
     datetime.utcnow() + timedelta(hours=5, minutes=30), "%Y-%m-%d")
 INDIA_UTC_OFFSET = "+05:30"
 
+# Arbitrary minimum date
+MIN_DATE = "2020-01-01"
+
 # Input/Output root directory
 ROOT_DIR = Path("tmp")
 CSV_DIR = ROOT_DIR / "csv" / "latest"
@@ -244,7 +247,7 @@ def parse(raw_data, i):
     try:
       fdate = datetime.strptime(entry["dateannounced"].strip(), "%d/%m/%Y")
       date = datetime.strftime(fdate, "%Y-%m-%d")
-      if date < "2020-01-01" or date > INDIA_DATE:
+      if date < MIN_DATE or date > INDIA_DATE:
         # Entries from future dates will be ignored
         logging.warning(
             f"[L{j+2}] [Future/past date: {entry['dateannounced']}] {entry['detectedstate']}: {entry['detecteddistrict']} {entry['numcases']}"
@@ -312,7 +315,7 @@ def parse_outcome(outcome_data, i):
     try:
       fdate = datetime.strptime(entry["date"].strip(), "%d/%m/%Y")
       date = datetime.strftime(fdate, "%Y-%m-%d")
-      if date < "2020-01-01" or date > INDIA_DATE:
+      if date < MIN_DATE or date > INDIA_DATE:
         # Entries from future dates will be ignored
         logging.warning(
             f"[L{j + 2}] [Future/past date: {entry['date']}] {state}")
@@ -377,7 +380,7 @@ def parse_icmr(icmr_data):
       try:
         fdate = datetime.strptime(entry["testedasof"].strip(), "%d/%m/%Y")
         date = datetime.strftime(fdate, "%Y-%m-%d")
-        if date < "2020-01-01" or date > INDIA_DATE:
+        if date < MIN_DATE or date > INDIA_DATE:
           # Entries from future dates will be ignored and logged
           logging.warning(
               f"[L{j + 2}] [Future/past date: {entry['testedasof']}]")
@@ -414,7 +417,7 @@ def parse_state_test(reader):
     try:
       fdate = datetime.strptime(entry["Updated On"].strip(), "%d/%m/%Y")
       date = datetime.strftime(fdate, "%Y-%m-%d")
-      if date < "2020-01-01" or date > INDIA_DATE:
+      if date < MIN_DATE or date > INDIA_DATE:
         # Entries from future dates will be ignored and logged
         logging.warning(
             f"[L{j+2}] [Future/past date: {entry['Updated On']}] {entry['State']}"
@@ -492,7 +495,7 @@ def parse_pivot_headers(header1, header2):
     try:
       fdate = datetime.strptime(header1[j].strip(), "%d/%m/%Y")
       date = datetime.strftime(fdate, "%Y-%m-%d")
-      if date < "2020-01-01" or date > INDIA_DATE:
+      if date < MIN_DATE or date > INDIA_DATE:
         # Entries from future dates will be ignored
         logging.warning(
             f"[{column_str(j + 1)}] Future/past date: {header1[j]}")
@@ -566,7 +569,7 @@ def parse_state_vaccination(reader):
         fdate = datetime.strptime(entry["Vaccinated As of"].strip(),
                                   "%d/%m/%Y")
         date = datetime.strftime(fdate, "%Y-%m-%d")
-        if date < "2020-01-01" or date > INDIA_DATE:
+        if date < MIN_DATE or date > INDIA_DATE:
           # Entries from future dates will be ignored and logged
           logging.warning(
               f"[L{j+2}] [Future/past date: {entry['Vaccinated As of']}] {entry['State']}"
@@ -730,7 +733,7 @@ def fill_deltas():
                         "last_updated"]
 
 
-def accumulate(start_after_date="2020-01-01", end_date="3020-01-30"):
+def accumulate(start_after_date=MIN_DATE, end_date="3020-01-30"):
   # Cumulate daily delta values into total
   dates = sorted(data)
   for i, date in enumerate(dates):
@@ -894,6 +897,31 @@ def add_populations():
           pass
 
 
+def trim_timeseries():
+  for state_data in timeseries.values():
+    if "dates" in state_data:
+      dates = list(state_data["dates"])
+      for date in sorted(dates, reverse=True):
+        if "delta" in state_data["dates"][date]:
+          last_date = date
+          break
+      for date in dates:
+        if date > last_date:
+          del state_data["dates"][date]
+
+    if "districts" in state_data:
+      for district_data in state_data["districts"].values():
+        if "dates" in district_data:
+          dates = list(district_data["dates"])
+          for date in sorted(dates, reverse=True):
+            if "delta" in district_data["dates"][date]:
+              last_date = date
+              break
+          for date in dates:
+            if date > last_date:
+              del district_data["dates"][date]
+
+
 def generate_timeseries(districts=False):
   for date in sorted(data):
     curr_data = data[date]
@@ -915,6 +943,7 @@ def generate_timeseries(districts=False):
             for statistic, value in district_data[stype].items():
               timeseries[state]["districts"][district]["dates"][date][stype][
                   statistic] = value
+  trim_timeseries()
 
 
 def add_state_meta(raw_data):
