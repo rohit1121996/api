@@ -72,17 +72,8 @@ DISTRICTS_DICT = defaultdict(dict)
 # District key to give to unkown district values in raw_data
 UNKNOWN_DISTRICT_KEY = "Unknown"
 # States with single district/no district-wise data
-SINGLE_DISTRICT_STATES = {
-    "AN": UNKNOWN_DISTRICT_KEY,
-    "AS": UNKNOWN_DISTRICT_KEY,
-    "CH": None,
-    "DL": None,
-    "GA": UNKNOWN_DISTRICT_KEY,
-    "LD": None,
-    "MN": UNKNOWN_DISTRICT_KEY,
-    "SK": UNKNOWN_DISTRICT_KEY,
-    "TG": UNKNOWN_DISTRICT_KEY,
-}
+SINGLE_DISTRICT_STATES = ["CH", "DL", "LD"]
+NO_DISTRICT_DATA_STATES = ["AN", "AS", "GA", "MN", "SK", "TG"]
 
 # Three most important statistics
 PRIMARY_STATISTICS = ["confirmed", "recovered", "deceased"]
@@ -162,7 +153,7 @@ def parse_state_metadata(raw_data):
 def parse_district_list(raw_data):
   # Initialize with districts from single district states
   for state in SINGLE_DISTRICT_STATES:
-    district = SINGLE_DISTRICT_STATES[state] or STATE_NAMES[state]
+    district = STATE_NAMES[state]
     DISTRICTS_DICT[state][district.lower()] = district
   # Parse from file
   for i, entry in enumerate(raw_data.values()):
@@ -178,11 +169,13 @@ def parse_district_list(raw_data):
       DISTRICTS_DICT[state][district.lower()] = district
 
 
-def parse_district(district, state, use_state=True):
+def parse_district(district, state, single_district=True, allow_unknown=True):
   district = district.strip()
   expected = True
-  if use_state and state in SINGLE_DISTRICT_STATES:
-    district = SINGLE_DISTRICT_STATES[state] or STATE_NAMES[state]
+  if single_district and state in SINGLE_DISTRICT_STATES:
+    district = STATE_NAMES[state]
+  elif allow_unknown and state in NO_DISTRICT_DATA_STATES:
+    district = UNKNOWN_DISTRICT_KEY
   elif not district or district.lower() == "unknown":
     district = UNKNOWN_DISTRICT_KEY
   elif district.lower() in DISTRICTS_DICT[state]:
@@ -202,7 +195,8 @@ def parse_district_metadata(raw_data):
     # District name with sheet capitalization
     district, expected = parse_district(entry["district"],
                                         state,
-                                        use_state=False)
+                                        single_district=False,
+                                        allow_unknown=False)
     if not expected:
       logging.warning(f"[L{i + 2}] [{state}] Unexpected district: {district}")
     # District population
@@ -284,8 +278,9 @@ def parse(raw_data, i):
         inc(data[date]["TT"]["delta"], statistic, count)
         inc(data[date][state]["delta"], statistic, count)
         # Don't parse old district data since it's unreliable
-        if state in SINGLE_DISTRICT_STATES or (i > 2 and date > GOSPEL_DATE and
-                                               state != UNASSIGNED_STATE_CODE):
+        if (state in SINGLE_DISTRICT_STATES or state in NO_DISTRICT_DATA_STATES
+            or
+            (i > 2 and date > GOSPEL_DATE and state != UNASSIGNED_STATE_CODE)):
           inc(
               data[date][state]["districts"][district]["delta"],
               statistic,
@@ -337,7 +332,7 @@ def parse_outcome(outcome_data, i):
 
       inc(data[date]["TT"]["delta"], statistic, 1)
       inc(data[date][state]["delta"], statistic, 1)
-      if state in SINGLE_DISTRICT_STATES:
+      if state in SINGLE_DISTRICT_STATES or state in NO_DISTRICT_DATA_STATES:
         inc(data[date][state]["districts"][district]["delta"], statistic, 1)
       ## Don't parse old district data since it's unreliable
       #  inc(data[date][state]['districts'][district]['delta'], statistic,
@@ -352,7 +347,8 @@ def parse_outcome(outcome_data, i):
 def parse_district_gospel(reader):
   for i, row in enumerate(reader):
     state = row["State_Code"].strip().upper()
-    if state not in STATE_CODES.values() or state in SINGLE_DISTRICT_STATES:
+    if (state not in STATE_CODES.values() or state in SINGLE_DISTRICT_STATES
+        or state in NO_DISTRICT_DATA_STATES):
       if state not in STATE_CODES.values():
         logging.warning(f"[{i + 2}] Bad state: {state}")
       continue
@@ -455,7 +451,7 @@ def parse_state_test(reader):
       # Add district entry too for single-district states
       if state in SINGLE_DISTRICT_STATES:
         # District/State name
-        district = SINGLE_DISTRICT_STATES[state] or STATE_NAMES[state]
+        district = STATE_NAMES[state]
         data[date][state]["districts"][district]["total"]["tested"] = count
         data[date][state]["districts"][district]["meta"]["tested"][
             "source"] = source
@@ -525,7 +521,9 @@ def parse_district_test(reader):
       # Skip since value is already added while parsing state data
       continue
 
-    district, expected = parse_district(row[row_keys["district"]], state)
+    district, expected = parse_district(row[row_keys["district"]],
+                                        state,
+                                        allow_unknown=False)
     if not expected:
       # Print unexpected district names
       logging.warning(f"[L{i + 3}] Unexpected district: {state} {district}")
@@ -611,7 +609,7 @@ def parse_state_vaccination(reader):
         # Add district entry too for single-district states
         if state in SINGLE_DISTRICT_STATES:
           # District/State name
-          district = SINGLE_DISTRICT_STATES[state] or STATE_NAMES[state]
+          district = STATE_NAMES[state]
           data[date][state]["districts"][district]["total"][statistic] = count
           #  data[date][state]["districts"][district]["meta"]["vaccinated"][
           #      "source"] = source
@@ -634,7 +632,9 @@ def parse_district_vaccination(reader):
       # Skip since value is already added while parsing state data
       continue
 
-    district, expected = parse_district(row[row_keys["district"]], state)
+    district, expected = parse_district(row[row_keys["district"]],
+                                        state,
+                                        allow_unknown=False)
     if not expected:
       # Print unexpected district names
       logging.warning(f"[L{i + 3}] Unexpected district: {state} {district}")
@@ -755,8 +755,9 @@ def accumulate(start_after_date=MIN_DATE, end_date="3020-01-30"):
                 state_data["total"][statistic],
             )
 
-        if state not in SINGLE_DISTRICT_STATES and (
-            "districts" not in state_data or date <= GOSPEL_DATE):
+        if (state not in SINGLE_DISTRICT_STATES
+            and state not in NO_DISTRICT_DATA_STATES
+            and ("districts" not in state_data or date <= GOSPEL_DATE)):
           # Old district data is already accumulated
           continue
 
@@ -780,8 +781,9 @@ def accumulate(start_after_date=MIN_DATE, end_date="3020-01-30"):
                 state_data["delta"][statistic],
             )
 
-        if state not in SINGLE_DISTRICT_STATES and (
-            "districts" not in state_data or date <= GOSPEL_DATE):
+        if (state not in SINGLE_DISTRICT_STATES
+            and state not in NO_DISTRICT_DATA_STATES
+            and ("districts" not in state_data or date <= GOSPEL_DATE)):
           # Old district data is already accumulated
           continue
 
@@ -848,8 +850,9 @@ def accumulate_days(num_days, offset=0, statistics=ALL_STATISTICS):
                     state_data["delta"][statistic],
                 )
 
-          if state not in SINGLE_DISTRICT_STATES and (
-              "districts" not in state_data or date <= GOSPEL_DATE):
+          if (state not in SINGLE_DISTRICT_STATES
+              and state not in NO_DISTRICT_DATA_STATES
+              and ("districts" not in state_data or date <= GOSPEL_DATE)):
             # Old district data is already accumulated
             continue
 
@@ -978,7 +981,8 @@ def add_district_meta(raw_data):
   last_data = data[sorted(data)[-1]]
   for j, entry in enumerate(raw_data.values()):
     state = entry["statecode"].strip().upper()
-    if state not in STATE_CODES.values() or state in SINGLE_DISTRICT_STATES:
+    if (state not in STATE_CODES.values() or state in SINGLE_DISTRICT_STATES
+        or state in NO_DISTRICT_DATA_STATES):
       # Entries having unrecognized state codes are discarded
       if state not in STATE_CODES.values():
         logging.warning(f"[L{j + 2}] Bad state: {entry['statecode']}")
@@ -1057,7 +1061,8 @@ def tally_districtwise(raw_data):
   # Check for extra entries
   logging.info("Checking for extra entries...")
   for state, state_data in last_data.items():
-    if "districts" not in state_data or state in SINGLE_DISTRICT_STATES:
+    if ("districts" not in state_data or state in SINGLE_DISTRICT_STATES
+        or state in NO_DISTRICT_DATA_STATES):
       continue
     state_name = STATE_NAMES[state]
     if state_name in raw_data:
@@ -1083,7 +1088,8 @@ def tally_districtwise(raw_data):
   for j, entry in enumerate(raw_data.values()):
     state = entry["statecode"].strip().upper()
     if (state not in STATE_CODES.values() or state == UNASSIGNED_STATE_CODE
-        or state in SINGLE_DISTRICT_STATES):
+        or state in SINGLE_DISTRICT_STATES
+        or state in NO_DISTRICT_DATA_STATES):
       continue
 
     for district, district_data in entry["districtData"].items():
