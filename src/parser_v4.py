@@ -405,7 +405,7 @@ def parse_icmr(icmr_data):
                     in {"vaccinated1", "vaccinated2"} else statistic)
         data[date]["TT"]["meta"][meta_key]["source"] = entry[
             statistic_dict["source"]].strip()
-        data[date]["TT"]["meta"][meta_key]["last_updated"] = date
+        data[date]["TT"]["meta"][meta_key]["date"] = date
 
 
 def parse_state_test(reader):
@@ -451,7 +451,7 @@ def parse_state_test(reader):
     if count:
       data[date][state]["total"]["tested"] = count
       data[date][state]["meta"]["tested"]["source"] = source
-      data[date][state]["meta"]["tested"]["last_updated"] = date
+      data[date][state]["meta"]["tested"]["date"] = date
       # Add district entry too for single-district states
       if state in SINGLE_DISTRICT_STATES:
         # District/State name
@@ -460,7 +460,7 @@ def parse_state_test(reader):
         data[date][state]["districts"][district]["meta"]["tested"][
             "source"] = source
         data[date][state]["districts"][district]["meta"]["tested"][
-            "last_updated"] = date
+            "date"] = date
 
 
 def column_str(n):
@@ -554,7 +554,7 @@ def parse_district_test(reader):
         #  data[date][state]['districts'][district]['meta']['tested'][
         #      'source'] = source
         data[date][state]["districts"][district]["meta"]["tested"][
-            "last_updated"] = date
+            "date"] = date
 
 
 def parse_state_vaccination(reader):
@@ -606,7 +606,7 @@ def parse_state_vaccination(reader):
       if count:
         data[date][state]["total"][statistic] = count
         #  data[date][state]["meta"]["vaccinated"]["source"] = source
-        data[date][state]["meta"]["vaccinated"]["last_updated"] = date
+        data[date][state]["meta"]["vaccinated"]["date"] = date
 
         # Add district entry too for single-district states
         if state in SINGLE_DISTRICT_STATES:
@@ -616,7 +616,7 @@ def parse_state_vaccination(reader):
           #  data[date][state]["districts"][district]["meta"]["vaccinated"][
           #      "source"] = source
           data[date][state]["districts"][district]["meta"]["vaccinated"][
-              "last_updated"] = date
+              "date"] = date
 
 
 def parse_district_vaccination(reader):
@@ -708,8 +708,8 @@ def fill_deltas():
               curr_data[state]["total"][key] = state_data["total"][key]
               curr_data[state]["meta"][key]["source"] = state_data["meta"][
                   key]["source"]
-              curr_data[state]["meta"][key]["last_updated"] = state_data[
-                  "meta"][key]["last_updated"]
+              curr_data[state]["meta"][key]["date"] = state_data["meta"][key][
+                  "date"]
 
         if "districts" not in state_data:
           continue
@@ -729,8 +729,7 @@ def fill_deltas():
                 curr_data[state]["districts"][district]["meta"][key][
                     "source"] = district_data["meta"][key]["source"]
                 curr_data[state]["districts"][district]["meta"][key][
-                    "last_updated"] = district_data["meta"][key][
-                        "last_updated"]
+                    "date"] = district_data["meta"][key]["date"]
 
 
 def accumulate(start_after_date=MIN_DATE, end_date="3020-01-30"):
@@ -947,7 +946,8 @@ def generate_timeseries(districts=False):
 
 
 def add_state_meta(raw_data):
-  last_data = data[sorted(data)[-1]]
+  last_date = sorted(data)[-1]
+  last_data = data[last_date]
   for j, entry in enumerate(raw_data["statewise"]):
     state = entry["statecode"].strip().upper()
     if state not in STATE_CODES.values() or state not in last_data:
@@ -967,6 +967,7 @@ def add_state_meta(raw_data):
           f"[L{j + 2}] [Bad timestamp: {entry['lastupdatedtime']}] {state}")
       continue
 
+    last_data[state]["meta"]["date"] = last_date
     last_data[state]["meta"]["last_updated"] = fdate.isoformat(
     ) + INDIA_UTC_OFFSET
     if entry["statenotes"]:
