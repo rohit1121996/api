@@ -181,9 +181,9 @@ const SHEETS_V31 = [
   //     ["travel_history", "1532084277"],
   ['district_list', '1207378023'],
   ['district_testing', '458610673'],
-  ['icmr_labs_statewise','847799380'],
-  ['icmr_rtpcr_tests_daily','1032515506'],
-  ['vaccine_doses_statewise','1601004575'],
+  // ['icmr_labs_statewise','847799380'],
+  // ['icmr_rtpcr_tests_daily','1032515506'],
+  // ['vaccine_doses_statewise','1601004575'],
   ['cowin_vaccine_data_statewise','1770661428'],
   ['cowin_vaccine_data_districtwise','382746758'],
   ['vaccine_doses_statewise_v2','1097927328']
