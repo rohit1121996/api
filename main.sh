@@ -24,6 +24,7 @@ cp ./raw_data*.json ./tmp
 cp ./deaths_recoveries*.json ./tmp
 cp ./locales*.json ./tmp
 cp ./states_daily.json ./tmp
+cp ./district_wise.json ./tmp
 cp -r ./updatelog ./tmp
 cp -r ./csv ./tmp
 
