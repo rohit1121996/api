@@ -20,7 +20,7 @@ mkdir tmp/v2
 mkdir tmp/updatelog
 
 cp ./data.json ./tmp/data_prev.json
-cp ./*.json ./tmp/
+# cp ./*.json ./tmp/
 # cp ./raw_data*.json ./tmp
 # cp ./deaths_recoveries*.json ./tmp
 # cp ./locales*.json ./tmp
