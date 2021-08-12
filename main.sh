@@ -21,7 +21,6 @@ mkdir tmp/updatelog
 
 cp ./data.json ./tmp/data_prev.json
 cp ./*.json ./tmp/
-rm ./tmp/data.json
 # cp ./raw_data*.json ./tmp
 # cp ./deaths_recoveries*.json ./tmp
 # cp ./locales*.json ./tmp
