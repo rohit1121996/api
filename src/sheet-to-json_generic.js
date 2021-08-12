@@ -219,22 +219,22 @@ const c = require('../lib/constants');
   //   file: c.FILE_DEATHS_RECOVERIES_2
   // })
 
-  await task({
-    sheet: c.SHEET,
-    tabs: {
-      state_meta_data: c.SHEET_STATES_META_DATA,
-      district_meta_data: c.SHEET_DISTRICTS_META_DATA
-    },
-    file: c.FILE_MISC
-  })
+//   await task({
+//     sheet: c.SHEET,
+//     tabs: {
+//       state_meta_data: c.SHEET_STATES_META_DATA,
+//       district_meta_data: c.SHEET_DISTRICTS_META_DATA
+//     },
+//     file: c.FILE_MISC
+//   })
 
-  await task({
-    sheet: c.SHEET,
-    tabs: {
-      districts: c.SHEET_DISTRICT_WISE
-    },
-    file: c.FILE_DISTRICTS
-  })
+//   await task({
+//     sheet: c.SHEET,
+//     tabs: {
+//       districts: c.SHEET_DISTRICT_WISE
+//     },
+//     file: c.FILE_DISTRICTS
+//   })
 
   // await task({
   //   sheet: c.SHEET,
@@ -244,13 +244,13 @@ const c = require('../lib/constants');
   //   file: c.FILE_TRAVEL_HISTORY
   // });
 
-  await task({
-    sheet: c.SHEET,
-    tabs: {
-      factoids: c.SHEET_NAME_FACTOIDS, faq: c.SHEET_FAQ
-    },
-    file: c.FILE_WEBSITE_DATA
-  })
+//   await task({
+//     sheet: c.SHEET,
+//     tabs: {
+//       factoids: c.SHEET_NAME_FACTOIDS, faq: c.SHEET_FAQ
+//     },
+//     file: c.FILE_WEBSITE_DATA
+//   })
 
   // need to remove objects with empty states or empty totaltested
   var data = await fetchData({
