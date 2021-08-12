@@ -30,6 +30,9 @@ cp ./district_wise.json ./tmp
 cp -r ./updatelog ./tmp
 cp -r ./csv ./tmp
 
+# temporary fixes. remove once Google Sheets is normal
+cp ./data.json ./tmp
+
 git checkout "$main_branch"
 
 
