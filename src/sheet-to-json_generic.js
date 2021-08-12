@@ -194,11 +194,11 @@ const c = require('../lib/constants');
   //   file: c.FILE_RAW_DATA_30
   // }) 
 
-  await task({
-    sheet: c.SHEET_v31,
-    tabs: { raw_data: c.SHEET_RAW_DATA },
-    file: c.FILE_RAW_DATA_31
-  }) 
+//   await task({
+//     sheet: c.SHEET_v31,
+//     tabs: { raw_data: c.SHEET_RAW_DATA },
+//     file: c.FILE_RAW_DATA_31
+//   }) 
 
   await task({
     sheet: c.SHEET_v32,
