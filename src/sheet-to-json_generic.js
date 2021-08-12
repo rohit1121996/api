@@ -3,17 +3,17 @@ const c = require('../lib/constants');
 
 (async function main() {
   console.log('Running task on start...')
-  await task({
-    sheet: c.SHEET_LOCALE,
-    tabs: { locales: 'od6' },
-    file: '/locales.json'
-  })
+//   await task({
+//     sheet: c.SHEET_LOCALE,
+//     tabs: { locales: 'od6' },
+//     file: '/locales.json'
+//   })
 
-  await task({
-    sheet: c.SHEET_LOCALE,
-    tabs: { locales_progress: 'ou6ga5q' },
-    file: '/locales_progress.json'
-  })
+//   await task({
+//     sheet: c.SHEET_LOCALE,
+//     tabs: { locales_progress: 'ou6ga5q' },
+//     file: '/locales_progress.json'
+//   })
 
     // uncomment below if v1 sheet has updates
   // await task({
